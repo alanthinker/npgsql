@@ -91,18 +91,30 @@ namespace Npgsql
 
         public override void WriteToStream(Stream outputStream)
         {
-            if (NpgsqlEventLog.Level >= LogLevel.Debug)
+            if (NpgsqlEventLog.isMyQueryLogEnabledAction() || NpgsqlEventLog.Level >= LogLevel.Debug)
             {
+                string logMessage;
                 // Log the string being sent.
                 // If (this) was constructed with a byte[], then commandText has to be
                 // initialized before the first Log call.
                 if (commandText == null)
                 {
-                    commandText = BackendEncoding.UTF8Encoding.GetString(commandBytes);
+                    logMessage = BackendEncoding.UTF8Encoding.GetString(commandBytes);
                     commandBytes = null;
                 }
+                else
+                {
+                    logMessage = commandText;
+                }
 
-                PGUtil.LogStringWritten(commandText);
+                if (NpgsqlEventLog.Level >= LogLevel.Debug)
+                {
+                    PGUtil.LogStringWritten(logMessage);
+                }
+                if (NpgsqlEventLog.isMyQueryLogEnabledAction())
+                {
+                    NpgsqlEventLog.myQueryLogAction(logMessage);
+                }
             }
 
             outputStream.WriteBytes(pgCommandBytes);

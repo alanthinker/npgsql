@@ -46,6 +46,8 @@ namespace Npgsql
     /// </summary>
     public sealed partial class NpgsqlCommand : DbCommand, ICloneable
     {
+        public bool ForDoDollarQuotedCmd { get; set; }
+
         ///<summary>
         /// This method checks the connection state to see if the connection
         /// is set or it is open. If one of this conditions is not met, throws
@@ -486,7 +488,15 @@ namespace Npgsql
                     case '/':                                           goto BlockCommentBegin;
                     case '-':                                           goto LineCommentBegin;
                     case '\'': if (standardConformantStrings)           goto Quoted;                else goto Escaped;
-                    case '$':  if (!IsIdentifier(lastChar))             goto DollarQuotedStart;     else break;
+                    case '$':
+                        if (this.ForDoDollarQuotedCmd) // Do $$ mycmd; $$
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            if (!IsIdentifier(lastChar)) goto DollarQuotedStart; else break;
+                        }
                     case '"':                                           goto DoubleQuoted;
                     case ':':  if (lastChar != ':')                     goto ParamStart;            else break;
                     case '@':  if (lastChar != '@')                     goto ParamStart;            else break;
