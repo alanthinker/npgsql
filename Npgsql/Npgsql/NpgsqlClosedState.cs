@@ -32,8 +32,8 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
-using Mono.Security.Protocol.Tls;
-using SecurityProtocolType=Mono.Security.Protocol.Tls.SecurityProtocolType;
+//using Mono.Security.Protocol.Tls;
+//using SecurityProtocolType=Mono.Security.Protocol.Tls.SecurityProtocolType;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Npgsql
@@ -183,22 +183,23 @@ namespace Npgsql
                         //if (context.UseMonoSsl)
                         if (!NpgsqlConnector.UseSslStream)
                         {
-                            SslClientStream sslStreamPriv;
+                            throw new NotSupportedException("UseSslStream");
+                            //SslClientStream sslStreamPriv;
 
-                            sslStreamPriv = new SslClientStream(
-                                    baseStream,
-                                    context.Host,
-                                    true,
-                                    SecurityProtocolType.Default,
-                                    clientCertificates);
+                            //sslStreamPriv = new SslClientStream(
+                            //        baseStream,
+                            //        context.Host,
+                            //        true,
+                            //        SecurityProtocolType.Default,
+                            //        clientCertificates);
 
-                            sslStreamPriv.ClientCertSelectionDelegate =
-                                    new CertificateSelectionCallback(context.DefaultCertificateSelectionCallback);
-                            sslStreamPriv.ServerCertValidationDelegate =
-                                    new CertificateValidationCallback(context.DefaultCertificateValidationCallback);
-                            sslStreamPriv.PrivateKeyCertSelectionDelegate =
-                                    new PrivateKeySelectionCallback(context.DefaultPrivateKeySelectionCallback);
-                            sslStream = sslStreamPriv;
+                            //sslStreamPriv.ClientCertSelectionDelegate =
+                            //        new CertificateSelectionCallback(context.DefaultCertificateSelectionCallback);
+                            //sslStreamPriv.ServerCertValidationDelegate =
+                            //        new CertificateValidationCallback(context.DefaultCertificateValidationCallback);
+                            //sslStreamPriv.PrivateKeyCertSelectionDelegate =
+                            //        new PrivateKeySelectionCallback(context.DefaultPrivateKeySelectionCallback);
+                            //sslStream = sslStreamPriv;
                         }
                         else
                         {
