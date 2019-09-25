@@ -71,7 +71,6 @@ namespace Npgsql
         //此项目中必须设置大于.net4.0时. 才能编译通过.     
         public static Func<bool> isMyQueryLogEnabledAction = (() => false); //默认不开启 log sql 功能.
 
-
         private NpgsqlEventLog()
         {
         }

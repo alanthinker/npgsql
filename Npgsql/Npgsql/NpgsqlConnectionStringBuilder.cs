@@ -34,7 +34,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
 using System.Diagnostics;
-using System.DirectoryServices;
+//using System.DirectoryServices;
 using System.Reflection;
 using System.Resources;
 using System.Runtime.Versioning;
@@ -430,89 +430,89 @@ namespace Npgsql
             public DateTime ExpiryTimeUtc;
         }
 
-        static Dictionary<SecurityIdentifier, CachedUpn> cachedUpns = new Dictionary<SecurityIdentifier,CachedUpn>();
+        //static Dictionary<SecurityIdentifier, CachedUpn> cachedUpns = new Dictionary<SecurityIdentifier,CachedUpn>();
 
-        private string GetIntegratedUserName()
-        {
-            // Side note: This maintains the hack fix mentioned before for https://github.com/npgsql/Npgsql/issues/133.
-            // In a nutshell, starting with .NET 4.5 WindowsIdentity inherits from ClaimsIdentity
-            // which doesn't exist in mono, and calling a WindowsIdentity method bombs.
-            // The workaround is that this function that actually deals with WindowsIdentity never
-            // gets called on mono, so never gets JITted and the problem goes away.
+        //private string GetIntegratedUserName()
+        //{
+        //    // Side note: This maintains the hack fix mentioned before for https://github.com/npgsql/Npgsql/issues/133.
+        //    // In a nutshell, starting with .NET 4.5 WindowsIdentity inherits from ClaimsIdentity
+        //    // which doesn't exist in mono, and calling a WindowsIdentity method bombs.
+        //    // The workaround is that this function that actually deals with WindowsIdentity never
+        //    // gets called on mono, so never gets JITted and the problem goes away.
 
-            // Gets the current user's username for integrated security purposes
-            WindowsIdentity identity = WindowsIdentity.GetCurrent();
-            CachedUpn cachedUpn = null;
-            string upn = null;
+        //    // Gets the current user's username for integrated security purposes
+        //    WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        //    CachedUpn cachedUpn = null;
+        //    string upn = null;
 
-            // Check to see if we already have this UPN cached
-            lock (cachedUpns)
-            {
-                if (cachedUpns.TryGetValue(identity.User, out cachedUpn))
-                {
-                    if (cachedUpn.ExpiryTimeUtc > DateTime.UtcNow)
-                        upn = cachedUpn.Upn;
-                    else
-                        cachedUpns.Remove(identity.User);
-                }
-            }
+        //    // Check to see if we already have this UPN cached
+        //    lock (cachedUpns)
+        //    {
+        //        if (cachedUpns.TryGetValue(identity.User, out cachedUpn))
+        //        {
+        //            if (cachedUpn.ExpiryTimeUtc > DateTime.UtcNow)
+        //                upn = cachedUpn.Upn;
+        //            else
+        //                cachedUpns.Remove(identity.User);
+        //        }
+        //    }
 
-            try
-            {
-                if (upn == null) {
-                    // Try to get the user's UPN in its correct case; this is what the
-                    // server will need to verify against a Kerberos/SSPI ticket
+        //    try
+        //    {
+        //        //if (upn == null) {
+        //        //    // Try to get the user's UPN in its correct case; this is what the
+        //        //    // server will need to verify against a Kerberos/SSPI ticket
 
-                    // First, find a domain server we can talk to
-                    string domainHostName;
+        //        //    // First, find a domain server we can talk to
+        //        //    string domainHostName;
 
-                    using (DirectoryEntry rootDse = new DirectoryEntry("LDAP://rootDSE") { AuthenticationType = AuthenticationTypes.Secure })
-                    {
-                        domainHostName = (string) rootDse.Properties["dnsHostName"].Value;
-                    }
+        //        //    using (DirectoryEntry rootDse = new DirectoryEntry("LDAP://rootDSE") { AuthenticationType = AuthenticationTypes.Secure })
+        //        //    {
+        //        //        domainHostName = (string) rootDse.Properties["dnsHostName"].Value;
+        //        //    }
 
-                    // Query the domain server by the current user's SID
-                    using (DirectoryEntry entry = new DirectoryEntry("LDAP://" + domainHostName) { AuthenticationType = AuthenticationTypes.Secure })
-                    {
-                        DirectorySearcher search = new DirectorySearcher(entry,
-                            "(objectSid=" + identity.User.Value + ")", new string[] { "userPrincipalName" });
+        //        //    // Query the domain server by the current user's SID
+        //        //    using (DirectoryEntry entry = new DirectoryEntry("LDAP://" + domainHostName) { AuthenticationType = AuthenticationTypes.Secure })
+        //        //    {
+        //        //        DirectorySearcher search = new DirectorySearcher(entry,
+        //        //            "(objectSid=" + identity.User.Value + ")", new string[] { "userPrincipalName" });
 
-                        SearchResult result = search.FindOne();
+        //        //        SearchResult result = search.FindOne();
 
-                        upn = (string) result.Properties["userPrincipalName"][0];
-                    }
-                }
+        //        //        upn = (string) result.Properties["userPrincipalName"][0];
+        //        //    }
+        //        //}
 
-                if (cachedUpn == null)
-                {
-                    // Save this value
-                    cachedUpn = new CachedUpn() { Upn = upn, ExpiryTimeUtc = DateTime.UtcNow.AddHours( 3.0 ) };
+        //        if (cachedUpn == null)
+        //        {
+        //            // Save this value
+        //            cachedUpn = new CachedUpn() { Upn = upn, ExpiryTimeUtc = DateTime.UtcNow.AddHours( 3.0 ) };
 
-                    lock (cachedUpns)
-                    {
-                        cachedUpns[identity.User] = cachedUpn;
-                    }
-                }
+        //            lock (cachedUpns)
+        //            {
+        //                cachedUpns[identity.User] = cachedUpn;
+        //            }
+        //        }
 
-                string[] upnParts = upn.Split('@');
+        //        string[] upnParts = upn.Split('@');
 
-                if(_includeRealm)
-                {
-                    // Make it Kerberos-y by uppercasing the realm part
-                    return upnParts[0] + "@" + upnParts[1].ToUpperInvariant();
-                }
-                else
-                {
-                    return upnParts[0];
-                }
-            }
-            catch
-            {
-                // Querying the directory failed, so return the SAM name
-                // (which probably won't work, but it's better than nothing)
-                return identity.Name.Split('\\')[1];
-            }
-        }
+        //        if(_includeRealm)
+        //        {
+        //            // Make it Kerberos-y by uppercasing the realm part
+        //            return upnParts[0] + "@" + upnParts[1].ToUpperInvariant();
+        //        }
+        //        else
+        //        {
+        //            return upnParts[0];
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        // Querying the directory failed, so return the SAM name
+        //        // (which probably won't work, but it's better than nothing)
+        //        return identity.Name.Split('\\')[1];
+        //    }
+        //}
     #endregion
 
         private string _username;
@@ -532,10 +532,10 @@ namespace Npgsql
         {
             get
             {
-                if ((_integrated_security) && (String.IsNullOrEmpty(_username)))
-                {
-                    _username = GetIntegratedUserName();
-                }
+                //if ((_integrated_security) && (String.IsNullOrEmpty(_username)))
+                //{
+                //    _username = GetIntegratedUserName();
+                //}
 
                 return _username;
             }

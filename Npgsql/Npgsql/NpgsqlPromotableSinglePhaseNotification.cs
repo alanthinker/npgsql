@@ -53,6 +53,8 @@ namespace Npgsql
                 _isolationLevel = tx.IsolationLevel;
                 if (!tx.EnlistPromotableSinglePhase(this))
                 {
+                    throw new NotSupportedException("不支持此情况- by AlanThinker.");
+
                     // must already have a durable resource
                     // start transaction
                     _npgsqlTx = _connection.BeginTransaction(ConvertIsolationLevel(_isolationLevel));
@@ -193,22 +195,23 @@ namespace Npgsql
         #endregion
 
         private static INpgsqlResourceManager _resourceManager;
-        private static System.Runtime.Remoting.Lifetime.ClientSponsor _sponser;
+        //private static System.Runtime.Remoting.Lifetime.ClientSponsor _sponser;
 
         private static INpgsqlResourceManager CreateResourceManager()
         {
-            // TODO: create network proxy for resource manager
-            if (_resourceManager == null)
-            {
-                _sponser = new System.Runtime.Remoting.Lifetime.ClientSponsor();
-                AppDomain rmDomain = AppDomain.CreateDomain("NpgsqlResourceManager", AppDomain.CurrentDomain.Evidence, AppDomain.CurrentDomain.SetupInformation);
-                _resourceManager =
-                    (INpgsqlResourceManager)
-                    rmDomain.CreateInstanceAndUnwrap(typeof (NpgsqlResourceManager).Assembly.FullName,
-                                                     typeof (NpgsqlResourceManager).FullName);
-                _sponser.Register((MarshalByRefObject)_resourceManager);
-            }
-            return _resourceManager;
+            throw new NotSupportedException("不支持-by AlanThinker");
+            //TODO: create network proxy for resource manager
+            //if (_resourceManager == null)
+            //    {
+            //        _sponser = new System.Runtime.Remoting.Lifetime.ClientSponsor();
+            //        AppDomain rmDomain = AppDomain.CreateDomain("NpgsqlResourceManager", AppDomain.CurrentDomain.Evidence, AppDomain.CurrentDomain.SetupInformation);
+            //        _resourceManager =
+            //            (INpgsqlResourceManager)
+            //            rmDomain.CreateInstanceAndUnwrap(typeof(NpgsqlResourceManager).Assembly.FullName,
+            //                                             typeof(NpgsqlResourceManager).FullName);
+            //        _sponser.Register((MarshalByRefObject)_resourceManager);
+            //    }
+            //return _resourceManager;
             //return new NpgsqlResourceManager();
         }
 

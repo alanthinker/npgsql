@@ -6,8 +6,8 @@ using System.Resources;
 
 // Additional assembly attributes are defined in GlobalAssemblyInfo.cs
 
-[assembly: AssemblyTitleAttribute("Npgsql - .Net Data Provider for PostgreSQL")]
-[assembly: AssemblyDescriptionAttribute(".Net Data Provider for PostgreSQL")]
+//[assembly: AssemblyTitleAttribute("Npgsql - .Net Data Provider for PostgreSQL")]
+//[assembly: AssemblyDescriptionAttribute(".Net Data Provider for PostgreSQL")]
 
 [assembly: InternalsVisibleTo("Npgsql.EntityFramework, PublicKey=" +
 "0024000004800000940000000602000000240000525341310004000001000100" +
