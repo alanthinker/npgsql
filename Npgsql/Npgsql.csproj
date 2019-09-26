@@ -7,6 +7,8 @@
 
     <PackageId>AlanThinker.Npgsql</PackageId>
     <PackageVersion>2.2.8</PackageVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>AKey.snk</AssemblyOriginatorKeyFile>
     
   </PropertyGroup>
 
